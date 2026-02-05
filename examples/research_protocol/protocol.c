@@ -1,84 +1,133 @@
 #include "protocol.h"
 
-NODE node;
+NODE node; /*defined as extern in the header*/
+static uint8_t tab[3][5];
 
-/* * Tabela simplificata pentru simulare.
- * Mapam: Tip Nod -> [ID_Nod, Metrica]
- * Pentru simplitate, vom hardcoda logica de alegere in get_best_target_address
- */
 
-void protocol_init_node(void) {
-    // Default generic
-    node.type = CONSUMER;
-    node.unicID = linkaddr_node_addr.u8[0];
-    node.metric = 0;
+static inline protocol_init_topology(void)
+{
+
+    /*
+    * heap map (priority qeue) for each groupe of
+    * nodes. Priority -> nodeID
+    */
+
+    /*PROCESSER*/
+    tab[0][0] = 1;
+    tab[0][1] = 5;
+    tab[0][2] = 0;
+    tab[0][3] = 0;
+    tab[0][4] = 0;
+    /*PRODUCER*/
+    tab[1][0] = 4;
+    tab[1][1] = 0;
+    tab[1][2] = 0;
+    tab[1][3] = 0;
+    tab[1][4] = 0;
+    /*CONSUMER*/
+    tab[2][0] = 3;
+    tab[2][1] = 2;
+    tab[2][2] = 0;
+    tab[2][3] = 0;
+    tab[2][4] = 0;
+
 }
 
-/* * Aceasta functie este "creierul" rutarii hardcodate.
- * In functie de ce cautam (Producer, Processer), returneaza ID-ul (adresa Rime)
- * a celui mai bun candidat definit de tine.
- */
-linkaddr_t get_best_target_address(NodeType_t target_type) {
+linkaddr_t protocol_get_min_target_metric(nodeType targetType) 
+{
     linkaddr_t addr;
-    addr.u8[0] = 0; // Default invalid
+    addr.u8[0] = 0; /*default values*/
     addr.u8[1] = 0;
 
-    if (target_type == PRODUCER) {
-        // Cautam cel mai bun Producer. 
-        // In scenariul tau: Nodul 4 este Producer cu metrica 9.
-        // Daca am avea mai multi, aici am face if (metric1 < metric2)...
-        addr.u8[0] = 4; 
+    if (targetType == PRODUCER) 
+    {
+        addr.u8[0] = (unsigned char)tab[1][0]; 
     }
-    else if (target_type == PROCESSER) {
-        // Cautam cel mai bun Processer.
-        // Avem Processer 1 (metric 4) si Processer 5 (metric 8).
-        // Alegem 1 pentru ca are metrica mai mica.
-        addr.u8[0] = 1; 
+
+    if (targetType == PROCESSER) 
+    {
+        addr.u8[0] = (unsigned char)tab[0][0]; 
     }
     
     return addr;
 }
 
-/* Initializari specifice bazate pe ID-ul din Cooja */
+void protocol_init_node(void) 
+{
+    /*default generic node*/
+    protocol_init_topology();
+    node.type = CONSUMER;
+    node.unicID = linkaddr_node_addr.u8[0];
+    node.metric = 0;
+}
 
-void protocol_init_node_processer_1(void) {
+
+void protocol_init_node_processer_1(void) 
+{
+    protocol_init_topology();
     node.type = PROCESSER;
     node.unicID = 1;
     node.metric = 4;
 }
 
-void protocol_init_node_consumer_2(void) {
+
+void protocol_init_node_consumer_2(void) 
+{
+    protocol_init_topology();
     node.type = CONSUMER;
     node.unicID = 2;
     node.metric = 4;
 }
 
-void protocol_init_node_consumer_3(void) {
+
+void protocol_init_node_consumer_3(void) 
+{
+    protocol_init_topology();
     node.type = CONSUMER;
     node.unicID = 3;
     node.metric = 1;
 }
 
-void protocol_init_node_producer_4(void) {
+
+void protocol_init_node_producer_4(void) 
+{
+    protocol_init_topology();
     node.type = PRODUCER;
-    node.unicID = 4; // Atentie: ID-ul trebuie sa bata cu cel din Cooja
+    node.unicID = 4; 
     node.metric = 9;
 }
 
-void protocol_init_node_processer_5(void) {
+
+void protocol_init_node_processer_5(void) 
+{
+    protocol_init_topology();
     node.type = PROCESSER;
     node.unicID = 5;
     node.metric = 8;
 }
 
-void print_status_node(void) {
-    char *role_str;
-    switch(node.type) {
-        case PROCESSER: role_str = "PROCESSER"; break;
-        case PRODUCER: role_str = "PRODUCER"; break;
-        case CONSUMER: role_str = "CONSUMER"; break;
-        default: role_str = "UNKNOWN";
+
+void print_status_node(void) 
+{
+    char *roleStr;
+
+    switch(node.type) 
+    {
+        case PROCESSER: 
+        roleStr = "PROCESSER"; 
+        break;
+
+        case PRODUCER: 
+        roleStr = "PRODUCER";
+        break;
+
+        case CONSUMER: 
+        roleStr = "CONSUMER"; 
+        break;
+
+        default: roleStr = "UNKNOWN";
     }
-    printf("[INIT] I am Node %u, Role: %s, Metric: %u\n", 
-           node.unicID, role_str, node.metric);
+
+    printf("[INIT]Info -> Node %u, Role: %s, Metric: %u\n", node.unicID, roleStr, node.metric);
+
 }
