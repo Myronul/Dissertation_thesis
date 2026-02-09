@@ -128,6 +128,6 @@ void print_status_node(void)
         default: roleStr = "UNKNOWN";
     }
 
-    printf("[INIT]Info -> Node %u, Role: %s, Metric: %u\n", node.unicID, roleStr, node.metric);
+    printf("[STATUS]Info -> Node %u, Role: %s, Metric: %u\n", node.unicID, roleStr, node.metric);
 
 }
