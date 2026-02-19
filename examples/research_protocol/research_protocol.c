@@ -119,7 +119,7 @@ PROCESS_THREAD(protocol_process, ev, data)
   
   print_status_node();
 
-  if(node.type == CONSUMER && node.unicID == 2) 
+  if((node.type == CONSUMER && node.unicID == 2) || (node.type == CONSUMER && node.unicID == 3))  
   {
       static struct etimer et;
       
