@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define UNICAST_CHANNEL 146 /*unic radio channel active*/
+#define UNICAST_CHANNEL 146 /*unic radio channel active.*/
 
 PROCESS(protocol_process, "Research Protocol Process");
 AUTOSTART_PROCESSES(&protocol_process);
