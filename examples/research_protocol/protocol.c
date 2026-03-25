@@ -1,113 +1,87 @@
 #include "protocol.h"
+#define UNICAST_CHANNEL 146 /*unic radio channel active*/
+#define BROADCAST_CHANNEL 146 
 
 NODE node; /*defined as extern in the header*/
-static uint8_t tab[3][5];
+DATA dataRxBroadCast;
+DATA dataRxUniCast;
+DATA dataQeueBc[255];
+static uint8_t indexBc = 0;
+DATA dataQeueUc[255];
+static uint8_t indexUc = 0;
+uint8_t flagUniCastRx = 0;
+uint8_t flagBroadCastRx = 0;
+
+static struct unicast_conn uc;    /*rime structure that handle the radio unicast com*/
+static struct broadcast_conn bc;  /*rime structure that handle the radio broadcast com*/
+static const struct unicast_callbacks unicastCallback = {__unicast_ISR__};
+static const struct broadcast_callbacks broadcastCallback = {__broadcast_ISR__};
 
 
-static inline protocol_init_topology(void)
+
+static void push_qeue_Bc(DATA dataRx)
 {
-
-    /*
-    * heap map (priority qeue) for each groupe of
-    * nodes. Priority -> nodeID
-    */
-
-    /*PROCESSER*/
-    tab[0][0] = 1;
-    tab[0][1] = 5;
-    tab[0][2] = 0;
-    tab[0][3] = 0;
-    tab[0][4] = 0;
-    /*PRODUCER*/
-    tab[1][0] = 4;
-    tab[1][1] = 0;
-    tab[1][2] = 0;
-    tab[1][3] = 0;
-    tab[1][4] = 0;
-    /*CONSUMER*/
-    tab[2][0] = 3;
-    tab[2][1] = 2;
-    tab[2][2] = 0;
-    tab[2][3] = 0;
-    tab[2][4] = 0;
-
+    dataQeueBc[indexBc++] = dataRx;
 }
 
-linkaddr_t protocol_get_min_target_metric(nodeType targetType) 
+static DATA pop_qeue_Bc(void)
 {
-    linkaddr_t addr;
-    addr.u8[0] = 0; /*default values*/
-    addr.u8[1] = 0;
-
-    if (targetType == PRODUCER) 
-    {
-        addr.u8[0] = (unsigned char)tab[1][0]; 
-    }
-
-    if (targetType == PROCESSER) 
-    {
-        addr.u8[0] = (unsigned char)tab[0][0]; 
-    }
-    
-    return addr;
-}
-
-void protocol_init_node(void) 
-{
-    /*default generic node*/
-    protocol_init_topology();
-    node.type = CONSUMER;
-    node.unicID = linkaddr_node_addr.u8[0];
-    node.metric = 0;
+    return dataQeueBc[indexBc--];
 }
 
 
-void protocol_init_node_processer_1(void) 
+static void push_qeue_Uc(DATA dataRx)
 {
-    protocol_init_topology();
-    node.type = PROCESSER;
-    node.unicID = 1;
-    node.metric = 4;
+    dataQeueUc[indexUc++] = dataRx;
+}
+
+static DATA pop_qeue_Uc(void)
+{
+    return dataQeueUc[indexUc--];
 }
 
 
-void protocol_init_node_consumer_2(void) 
+static void __unicast_ISR__(struct unicast_conn *c, const linkaddr_t *from) 
 {
-    protocol_init_topology();
-    node.type = CONSUMER;
-    node.unicID = 2;
-    node.metric = 4;
+    /*ISR for the unicast receiving data*/
+    memcpy(&dataRxUniCast, packetbuf_dataptr(), sizeof(DATA));
+    push_qeue_Uc(dataRxUniCast);
+
 }
 
 
-void protocol_init_node_consumer_3(void) 
+static void __broadcast_ISR__(struct broadcast_conn *c, const linkaddr_t *from) 
 {
-    protocol_init_topology();
-    node.type = CONSUMER;
-    node.unicID = 3;
-    node.metric = 1;
+    /*ISR for the unicast receiving data*/
+    memcpy(&dataRxBroadCast, packetbuf_dataptr(), sizeof(DATA));
+    push_qeue_Bc(dataRxUniCast);
 }
 
 
-void protocol_init_node_producer_4(void) 
+void init_com_channels(void)
 {
-    protocol_init_topology();
-    node.type = PRODUCER;
-    node.unicID = 4; 
-    node.metric = 9;
+    unicast_open(&uc, UNICAST_CHANNEL, &unicastCallback);
+    broadcast_open(&bc, BROADCAST_CHANNEL, &broadcastCallback);
 }
 
 
-void protocol_init_node_processer_5(void) 
+void send_message_unicast(linkaddr_t *dest, DATA *data) 
 {
-    protocol_init_topology();
-    node.type = PROCESSER;
-    node.unicID = 5;
-    node.metric = 8;
+    packetbuf_copyfrom(data, sizeof(DATA)); /*copy data in the stack radio*/
+    unicast_send(&uc, dest);
+    printf("[TX] Sent packet to Node %u\n", dest->u8[0]);
 }
 
 
-void print_status_node(void) 
+void send_message_broadcast(DATA *data)
+{
+    packetbuf_copyfrom(data, sizeof(DATA));
+    broadcast_send(&bc);
+    printf("[TX] Sent packet Broadcast %u\n");
+}
+
+
+void protocol_print_status_node(void) 
 {
     char *roleStr;
 
@@ -130,4 +104,15 @@ void print_status_node(void)
 
     printf("[STATUS]Info -> Node %u, Role: %s, Metric: %u\n", node.unicID, roleStr, node.metric);
 
+}
+
+
+
+linkaddr_t protocol_get_min_target_metric(nodeType targetType) 
+{
+    linkaddr_t addr;
+    addr.u8[0] = 0; /*default values*/
+    addr.u8[1] = 0;
+    
+    return addr;
 }

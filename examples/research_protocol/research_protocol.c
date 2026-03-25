@@ -4,20 +4,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#define UNICAST_CHANNEL 146 /*unic radio channel active*/
+
 
 PROCESS(protocol_process, "Research Protocol Process");
 AUTOSTART_PROCESSES(&protocol_process);
 
-static struct unicast_conn uc; /*rime structure that handle the radio com*/
-
-
-static void send_message(linkaddr_t *dest, DATA *data) 
-{
-    packetbuf_copyfrom(data, sizeof(DATA)); /*copy data in the stack radio*/
-    unicast_send(&uc, dest);
-    printf("[TX] Sent packet to Node %u\n", dest->u8[0]);
-}
 
 
 static void recv_uc(struct unicast_conn *c, const linkaddr_t *from) 

@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define N 256 /*Define max packet length*/
 
 typedef enum 
 {
@@ -24,30 +25,32 @@ typedef struct NODE
 
 }NODE;
 
-
-typedef struct 
+typedef struct DATA 
 {
-    linkaddr_t consumerID; 
-    uint8_t senderType;          
-    uint8_t payload[10];      
+    int8_t id;      
+    uint8_t roleCode;   
+    uint8_t msgType; 
+    uint8_t msgLen;
+    uint8_t payload[N];   
 
 }DATA;
 
 
 extern NODE node; /*current node defined*/
+extern DATA dataRxBroadCast;
+extern DATA dataRxUniCast;
+extern uint8_t flagUniCastRx;
+extern uint8_t flagBroadCastRx;
+DATA dataTxBroadCast;
+DATA dataTxUniCast;
 
 
-void protocol_init_node(void);
-void print_status_node(void);
+void init_com_channels(void);
+void send_message_unicast(linkaddr_t *dest, DATA *data);
+void send_message_broadcast(DATA *data);
+
+void protocol_print_status_node(void);
 linkaddr_t protocol_get_min_target_metric(nodeType target_type);
-
-/*simulation only function prototypes*/
- 
-void protocol_init_node_processer_1(void);
-void protocol_init_node_consumer_2(void);
-void protocol_init_node_consumer_3(void);
-void protocol_init_node_producer_4(void);
-void protocol_init_node_processer_5(void);
 
 
 
