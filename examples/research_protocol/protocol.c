@@ -6,6 +6,9 @@ NODE node; /*defined as extern in the header*/
 DATA dataRxBroadCast;
 DATA dataRxUniCast;
 DATA dataQeueBc[255];
+static uint8_t headBc = 0;
+static uint8_t tailBc = 0;
+static uint8_t countBc = 0;
 static uint8_t indexBc = 0;
 DATA dataQeueUc[255];
 static uint8_t indexUc = 0;
@@ -21,12 +24,22 @@ static const struct broadcast_callbacks broadcastCallback = {__broadcast_ISR__};
 
 static void push_qeue_Bc(DATA dataRx)
 {
-    dataQeueBc[indexBc++] = dataRx;
+    if(indexBc < 255)
+    {
+        dataQeueBc[tailBc] = dataRx;
+        tailBc = (tailBc+1)%255;
+        indexBc++;
+    }
 }
 
 static DATA pop_qeue_Bc(void)
 {
-    return dataQeueBc[indexBc--];
+    DATA first = dataQeueBc[headBc];
+    headBc = (headBc+1)%255;
+    indexBc--;
+
+    return first;
+    
 }
 
 
