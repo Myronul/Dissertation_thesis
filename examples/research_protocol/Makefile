@@ -14,8 +14,7 @@
 CONTIKI_PROJECT = research_protocol
 all: $(CONTIKI_PROJECT)
 
-PROJECT_SOURCEFILES += protocol.c
-PROJECT_SOURCEFILES += process.c
+PROJECT_SOURCEFILES += protocol_stack.c
 
 CONTIKI_WITH_RIME = 1
 CONTIKI_WITH_IPV6 = 0

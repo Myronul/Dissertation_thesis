@@ -1,24 +1,29 @@
-#include "protocol.h"
+#include "protocol_stack.h"
 #define UNICAST_CHANNEL 146 /*unic radio channel active*/
 #define BROADCAST_CHANNEL 146 
 
 NODE node; /*defined as extern in the header*/
-DATA dataRxBroadCast;
-DATA dataRxUniCast;
-DATA dataQeueBc[255];
+static DATA dataRxBroadCast;
+static DATA dataRxUniCast;
+
+static DATA dataQeueBc[5];
 static uint8_t headBc = 0;
 static uint8_t tailBc = 0;
 static uint8_t countBc = 0;
 static uint8_t indexBc = 0;
-DATA dataQeueUc[255];
+static uint8_t flagEmpty = 0;
+
+static DATA dataQeueUc[5];
+static uint8_t headUc = 0;
+static uint8_t tailUc = 0;
+static uint8_t countUc = 0;
 static uint8_t indexUc = 0;
-uint8_t flagUniCastRx = 0;
-uint8_t flagBroadCastRx = 0;
+
+static uint8_t flagUniCastRx = 0;
+static uint8_t flagBroadCastRx = 0;
 
 static struct unicast_conn uc;    /*rime structure that handle the radio unicast com*/
 static struct broadcast_conn bc;  /*rime structure that handle the radio broadcast com*/
-static const struct unicast_callbacks unicastCallback = {__unicast_ISR__};
-static const struct broadcast_callbacks broadcastCallback = {__broadcast_ISR__};
 
 
 
@@ -34,29 +39,48 @@ static void push_qeue_Bc(DATA dataRx)
 
 static DATA pop_qeue_Bc(void)
 {
-    DATA first = dataQeueBc[headBc];
-    headBc = (headBc+1)%255;
-    indexBc--;
 
-    return first;
+    if(!indexBc)
+    {
+
+        DATA first = dataQeueBc[headBc];
+        headBc = (headBc+1)%255;
+        indexBc--;
+
+        return first;        
+    }
     
 }
 
 
 static void push_qeue_Uc(DATA dataRx)
 {
-    dataQeueUc[indexUc++] = dataRx;
+    if(indexUc < 255)
+    {
+        dataQeueUc[tailUc] = dataRx;
+        tailUc = (tailUc+1)%255;
+        indexUc++;
+    }
 }
 
 static DATA pop_qeue_Uc(void)
 {
-    return dataQeueUc[indexUc--];
+    if(!indexUc)
+    {
+
+        DATA first = dataQeueUc[headUc];
+        headUc = (headUc+1)%255;
+        indexUc--;
+
+        return first;        
+    }
 }
 
 
 static void __unicast_ISR__(struct unicast_conn *c, const linkaddr_t *from) 
 {
     /*ISR for the unicast receiving data*/
+    flagUniCastRx = 1;
     memcpy(&dataRxUniCast, packetbuf_dataptr(), sizeof(DATA));
     push_qeue_Uc(dataRxUniCast);
 
@@ -66,9 +90,13 @@ static void __unicast_ISR__(struct unicast_conn *c, const linkaddr_t *from)
 static void __broadcast_ISR__(struct broadcast_conn *c, const linkaddr_t *from) 
 {
     /*ISR for the unicast receiving data*/
+    flagBroadCastRx = 1;
     memcpy(&dataRxBroadCast, packetbuf_dataptr(), sizeof(DATA));
-    push_qeue_Bc(dataRxUniCast);
+    push_qeue_Bc(dataRxBroadCast);
 }
+
+static const struct unicast_callbacks unicastCallback = {__unicast_ISR__};
+static const struct broadcast_callbacks broadcastCallback = {__broadcast_ISR__};
 
 
 void init_com_channels(void)
@@ -90,7 +118,7 @@ void send_message_broadcast(DATA *data)
 {
     packetbuf_copyfrom(data, sizeof(DATA));
     broadcast_send(&bc);
-    printf("[TX] Sent packet Broadcast %u\n");
+    printf("[TX] Sent packet Broadcast\n");
 }
 
 

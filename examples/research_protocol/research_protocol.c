@@ -1,145 +1,55 @@
 #include "contiki.h"
-#include "protocol.h"
+#include "protocol_stack.h"
 #include "net/rime/rime.h"
+#include "lib/random.h"
 #include <stdio.h>
 #include <string.h>
 
+static uint8_t SystemState = 0; /*global state for the entire system*/
 
 
-PROCESS(protocol_process, "Research Protocol Process");
-AUTOSTART_PROCESSES(&protocol_process);
-
-
-
-static void recv_uc(struct unicast_conn *c, const linkaddr_t *from) 
+static void discovery_send_message_searching()
 {
-    /*
-    * Callback funciton like ISR for the receiving interrupt message
-    * via radio
-    */
+    linkaddr_copy((unsigned char*)&dataTxBroadCast.id, &linkaddr_node_addr); /*test*/
+    dataTxBroadCast.msgLen = 3;
+    dataTxBroadCast.msgType = 0x01;
+    dataTxBroadCast.roleCode = 0x00;
+    memcpy(dataTxBroadCast.payload, "Broadcast message", 17);
 
-    DATA data;
-
-    if(packetbuf_datalen() != sizeof(DATA)) 
-    {
-        printf("[ERR]Received invalid size\n");
-        return;
-    }
-
-    memcpy(&data, packetbuf_dataptr(), sizeof(DATA));
-    printf("[RX]Node %u received from Node %u (by Consumer: %u)\n", 
-            node.unicID, from->u8[0], data.consumerID.u8[0]);
-
-
-    /*Start routing logic in base of the nod type*/
-
-    if (node.type == PRODUCER) 
-    {
-        printf("[Producer]:Finding best Processer...\n");
-        /*find min metric processer*/
-        linkaddr_t nextHop = protocol_get_min_target_metric(PROCESSER);
-        /*update sender header message and send*/
-        data.senderType = PRODUCER;
-    
-        if(nextHop.u8[0] != 0) 
-        {
-            send_message(&nextHop, &data);
-        } 
-        
-        else 
-        {
-             printf("[ERR]No Processer found!\n");
-        }
-    }
-    
-
-    if (node.type == PROCESSER) 
-    {
-        printf("[PROCESSER]Processing done. Replying to Consumer...\n");
-        data.senderType = PROCESSER;
-        send_message(&data.consumerID, &data);
-    }
-   
-    if (node.type == CONSUMER) 
-    {
-        if(linkaddr_cmp(&data.consumerID, &linkaddr_node_addr)) 
-        {
-            printf("[SUCCESS]Cycle Completed! Data returned to Node %u).\n", node.unicID);
-        }
-    }
+    send_message_broadcast(&dataTxBroadCast);
 }
 
+PROCESS(process_init_node, "Protocol Init Node");
+AUTOSTART_PROCESSES(&process_init_node);
 
-
-static const struct unicast_callbacks unicast_callbacks = {recv_uc};
-
-PROCESS_THREAD(protocol_process, ev, data)
+PROCESS_THREAD(process_init_node, ev, data)
 {
-  PROCESS_BEGIN();
+    static struct etimer timer;
 
-  unicast_open(&uc, UNICAST_CHANNEL, &unicast_callbacks);
+    PROCESS_BEGIN();
 
-  uint8_t myID = linkaddr_node_addr.u8[0];
+    init_com_channels();
+    random_init(linkaddr_node_addr.u8[0] ^ (clock_time() & 0xFF));
 
-  switch(myID) 
-  {
-      case 1: 
-      protocol_init_node_processer_1(); 
-      break;
+    while(1)
+    {
+        if(SystemState == 0)
+        {
+            int jitter = 1 + random_rand()%1000;
+            clock_time_t t = (CLOCK_SECOND * jitter) / 1000;
+            printf("wait...%lu\n", t);
+            if(t == 0) t = 1;
+            etimer_set(&timer, t);
+            PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
+            discovery_send_message_searching();
+        }
 
-      case 2: 
-      protocol_init_node_consumer_2(); 
-      break;
+        if(SystemState == 1)
+        {
 
-      case 3: 
-      protocol_init_node_consumer_3(); 
-      break;
+        }
 
-      case 4: 
-      protocol_init_node_producer_4(); 
-      break; 
+    }
 
-      case 5: 
-      protocol_init_node_processer_5(); 
-      break;
-
-      default: 
-      protocol_init_node(); 
-      break;
-  }
-  
-  print_status_node();
-
-  if(node.type == CONSUMER && node.unicID == 2) 
-  {
-      static struct etimer et;
-      
-      etimer_set(&et, CLOCK_SECOND * 5); 
-      PROCESS_WAIT_UNTIL(etimer_expired(&et));
-      printf("\n[Consumer] %u initiating request...\n", node.unicID);
-      
-      /*build the message*/
-      DATA data;
-      linkaddr_copy(&data.consumerID, &linkaddr_node_addr);
-      data.senderType = CONSUMER;
-      
-      linkaddr_t dest = protocol_get_min_target_metric(PRODUCER);
-      
-      if(dest.u8[0] != 0) 
-      {
-        send_message(&dest, &data);
-      } 
-      else 
-      {
-        printf("[ERR] No Producer found in table!\n");
-      }
-
-  }
-
-  while(1) 
-  {
-      PROCESS_WAIT_EVENT();
-  }
-  
-  PROCESS_END();
+    PROCESS_END();
 }

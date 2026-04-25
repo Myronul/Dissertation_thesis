@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define N 256 /*Define max packet length*/
+#define NrMaxStack 256 /*Define max packet length*/
 
 typedef enum 
 {
@@ -15,6 +15,16 @@ typedef enum
     CONSUMER = 2
     
 }nodeType;
+
+typedef enum
+{
+    SEARCHING,
+    RECEIVED,
+    WAITINGBR,
+    IDNEGOTIATION,
+    WAITINGFORID
+
+}discoveryState;
 
 
 typedef struct NODE 
@@ -31,16 +41,12 @@ typedef struct DATA
     uint8_t roleCode;   
     uint8_t msgType; 
     uint8_t msgLen;
-    uint8_t payload[N];   
+    uint8_t payload[NrMaxStack];   
 
 }DATA;
 
 
-extern NODE node; /*current node defined*/
-extern DATA dataRxBroadCast;
-extern DATA dataRxUniCast;
-extern uint8_t flagUniCastRx;
-extern uint8_t flagBroadCastRx;
+extern NODE node;
 DATA dataTxBroadCast;
 DATA dataTxUniCast;
 
