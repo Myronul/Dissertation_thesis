@@ -1,3 +1,6 @@
+**The sources files are located in the path: examples/research_protocol**
+
+
 The Contiki Operating System
 ============================
 
