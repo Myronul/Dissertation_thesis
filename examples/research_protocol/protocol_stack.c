@@ -1,14 +1,14 @@
 #include "protocol_stack.h"
 #include"protocol_messages.h"
-#define UNICAST_CHANNEL 146 /*unic radio channel active*/
+#define UNICAST_CHANNEL 129 /*unic radio channel active*/
 #define BROADCAST_CHANNEL 146 
-#define NR_DATA_BUFFER 5
+#define NR_DATA_BUFFER 8 /*number of messages that can be stored in the buffer for each type of com*/
 
 extern uint8_t SystemState;
 
 NODE node; /*defined as extern in the header*/
-static DATA dataRxBroadCast;
-static DATA dataRxUniCast;
+DATA dataRxBroadCast;
+DATA dataRxUniCast;
 
 static DATA dataQeueBc[NR_DATA_BUFFER];
 static DATA dataQeueUc[NR_DATA_BUFFER];
@@ -23,7 +23,7 @@ static struct unicast_conn uc;    /*rime structure that handle the radio unicast
 static struct broadcast_conn bc;  /*rime structure that handle the radio broadcast com*/
 
 
-static void push_data_com_stack(DATA dataRx, DATA* restrict buffer, uint8_t* restrict map)
+static void push_data_com_stack(DATA dataRx, DATA* buffer, uint8_t* map)
 {
     /*bitMap implementation and message filter*/
 
@@ -31,15 +31,17 @@ static void push_data_com_stack(DATA dataRx, DATA* restrict buffer, uint8_t* res
     switch(SystemState)
     {
         case state_AUTODISCOVERY:
-        if((dataRx.msgType != msgType_BC_AUTODISCOVERY_START) || (dataRx.msgType != msgType_UC_JOIN_EXISTING_NETWORK))
+        if((dataRx.msgType != msgType_BC_AUTODISCOVERY_START) && (dataRx.msgType != msgType_UC_JOIN_EXISTING_NETWORK))
         {
+            printf("[FILTER]Message filtered in state AUTODISCOVERY\n");
             return; /*for this state we will accept only a certain types of msges to not fill fast the buffer*/
         }
         break;
 
         case state_LISTEN:
-        if((dataRx.msgType != msgType_BC_AUTODISCOVERY_START) || (dataRx.msgType != msgType_UC_JOIN_EXISTING_NETWORK))
+        if((dataRx.msgType != msgType_BC_AUTODISCOVERY_START) && (dataRx.msgType != msgType_UC_JOIN_EXISTING_NETWORK))
         {
+            printf("[FILTER]Message filtered in state LISTEN\n");
             return; /*for this state we will accept only a certain types of msges to not fill fast the buffer*/
         }
         break;
@@ -134,6 +136,8 @@ static void __unicast_ISR__(struct unicast_conn *c, const linkaddr_t *from)
     /*ISR for the unicast receiving data*/
     flagUniCastRx = 1;
     memcpy(&dataRxUniCast, packetbuf_dataptr(), sizeof(DATA));
+    printf("[RX-UC]Node %u received from Node %u )\n", 
+            node.unicID, from->u8[0]);
     push_data_com_stack(dataRxUniCast, dataQeueUc, &bitMapUc);
 
 }
@@ -141,9 +145,17 @@ static void __unicast_ISR__(struct unicast_conn *c, const linkaddr_t *from)
 
 static void __broadcast_ISR__(struct broadcast_conn *c, const linkaddr_t *from) 
 {
-    /*ISR for the unicast receiving data*/
+    /*ISR for the broadcast receiving data*/
+    if(packetbuf_datalen() != sizeof(DATA)) 
+    {
+        printf("[ERR]Received invalid size\n");
+        return;
+    }
+
     flagBroadCastRx = 1;
     memcpy(&dataRxBroadCast, packetbuf_dataptr(), sizeof(DATA));
+    printf("[RX-BC]Node %u received from Node %u )\n", 
+            node.unicID, from->u8[0]);
     push_data_com_stack(dataRxBroadCast, dataQeueBc, &bitMapBc);
 }
 
@@ -153,6 +165,7 @@ static const struct broadcast_callbacks broadcastCallback = {__broadcast_ISR__};
 
 void init_com_channels(void)
 {
+    printf("[INIT]Initializing communication channels\n");
     unicast_open(&uc, UNICAST_CHANNEL, &unicastCallback);
     broadcast_open(&bc, BROADCAST_CHANNEL, &broadcastCallback);
 }

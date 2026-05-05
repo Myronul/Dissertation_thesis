@@ -1,4 +1,4 @@
-obj_native/protocol_stack.o: protocol_stack.c protocol_stack.h \
+obj_native/protocol_messages.o: protocol_messages.c protocol_messages.h \
  ../../core/./contiki.h ../../core/./contiki-version.h \
  ../../platform/native/./contiki-conf.h \
  ../../platform/native/./ctk/ctk-curses.h \
@@ -12,7 +12,7 @@ obj_native/protocol_stack.o: protocol_stack.c protocol_stack.h \
  ../../cpu/native/./rtimer-arch.h ../../core/./sys/pt.h \
  ../../core/./sys/procinit.h ../../core/./sys/loader.h \
  ../../core/./sys/clock.h ../../core/./sys/energest.h \
- ../../core/./sys/rtimer.h ../../core/./net/rime/rime.h \
+ ../../core/./sys/rtimer.h protocol_stack.h ../../core/./net/rime/rime.h \
  ../../core/./net/rime/announcement.h ../../core/./net/linkaddr.h \
  ../../core/./net/rime/collect.h ../../core/./net/rime/runicast.h \
  ../../core/./net/rime/stunicast.h ../../core/./sys/ctimer.h \
@@ -34,8 +34,8 @@ obj_native/protocol_stack.o: protocol_stack.c protocol_stack.h \
  ../../core/./net/rime/rmh.h ../../core/./net/rime/route.h \
  ../../core/./net/rime/rucb.h ../../core/./net/rime/timesynch.h \
  ../../core/./net/mac/mac.h ../../core/./dev/radio.h \
- ../../core/./net/rime/trickle.h protocol_messages.h
-protocol_stack.c protocol_stack.h :
+ ../../core/./net/rime/trickle.h
+protocol_messages.c protocol_messages.h :
  ../../core/./contiki.h ../../core/./contiki-version.h :
  ../../platform/native/./contiki-conf.h :
  ../../platform/native/./ctk/ctk-curses.h :
@@ -49,7 +49,7 @@ protocol_stack.c protocol_stack.h :
  ../../cpu/native/./rtimer-arch.h ../../core/./sys/pt.h :
  ../../core/./sys/procinit.h ../../core/./sys/loader.h :
  ../../core/./sys/clock.h ../../core/./sys/energest.h :
- ../../core/./sys/rtimer.h ../../core/./net/rime/rime.h :
+ ../../core/./sys/rtimer.h protocol_stack.h ../../core/./net/rime/rime.h :
  ../../core/./net/rime/announcement.h ../../core/./net/linkaddr.h :
  ../../core/./net/rime/collect.h ../../core/./net/rime/runicast.h :
  ../../core/./net/rime/stunicast.h ../../core/./sys/ctimer.h :
@@ -71,4 +71,4 @@ protocol_stack.c protocol_stack.h :
  ../../core/./net/rime/rmh.h ../../core/./net/rime/route.h :
  ../../core/./net/rime/rucb.h ../../core/./net/rime/timesynch.h :
  ../../core/./net/mac/mac.h ../../core/./dev/radio.h :
- ../../core/./net/rime/trickle.h protocol_messages.h :
+ ../../core/./net/rime/trickle.h :

@@ -46,6 +46,7 @@ PROCESS_THREAD(process_init_node, ev, data)
     {
         if(SystemState == state_AUTODISCOVERY)
         {
+            Log_print();
             clock_time_t t = generate_random_time();
             etimer_set(&timer, t);
             PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
@@ -62,6 +63,8 @@ PROCESS_THREAD(process_init_node, ev, data)
             {
                 /*try if another nodes are searching too for a network*/
                 counter_t = 3;
+                counter = 0;
+                protocol_reset_stack_BC();
                 SystemState = state_LISTEN;
             }
 
@@ -83,6 +86,7 @@ PROCESS_THREAD(process_init_node, ev, data)
             while(message_search_for_type_BC(msgType_BC_AUTODISCOVERY_START) == 1)
             {
                 /*empty the current stack from all messages of autodiscovery*/
+                printf("Message received in LISTEN state, add counter\n");
                 counter_t++;
 
             }
@@ -98,7 +102,9 @@ PROCESS_THREAD(process_init_node, ev, data)
             {
                 counter = 0;
                 counter_t = 0;
+                message_clear_buffer_id(); /*clear the buffer of the ids of the nodes discovered in the previous round*/
                 SystemState = state_ELECT_LIDER_TEMP;
+                Log_print();
                 PROCESS_YIELD();
             }
 

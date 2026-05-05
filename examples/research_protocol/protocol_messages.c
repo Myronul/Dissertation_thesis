@@ -1,4 +1,5 @@
 #include"protocol_messages.h"
+
 static uint8_t NodesID[MAX_NDR_NODES] = {0}; /*store current ids network in listening mode*/
 static uint8_t indexNodesID = 0;
 
@@ -26,20 +27,26 @@ uint8_t message_search_for_type_BC(uint8_t type)
 
     if(pop_data_comBc_stack(type, &tempData) && indexNodesID<MAX_NDR_NODES)
     {
-        if(NodesID[indexNodesID] == tempData.id)
-        {
-            /*case for duplicate message*/
-            return 0;
-        }
+        uint8_t i = 0;
 
-        else
+        for(i=0; i<indexNodesID; i++)
         {
-            /*case for new message*/
-            NodesID[indexNodesID++] = tempData.id;
-            return 1; /*true*/
+            if(NodesID[i] == tempData.id)
+            {
+                /*case for duplicate message*/
+                printf("[FILTER]Message filtered for duplicate id %u\n", tempData.id);
+                return 0;
+            }
         }
+        
+        /*case for new message*/
+        NodesID[indexNodesID++] = tempData.id;
+        printf("[INFO]New node discovered with id %u\n", tempData.id);
+        return 1; /*true*/
+        
     }
 
+    printf("[INFO]No message of type %u found in BC stack\n", type);
     return 0; /*false*/
 }
 
@@ -49,6 +56,7 @@ uint8_t message_search_for_type_UC(uint8_t type)
     DATA tempData;
     if(pop_data_comUc_stack(type, &tempData) && indexNodesID<MAX_NDR_NODES)
     {
+        printf("[INFO]Unicast message received from node with id %u\n", tempData.id);
         return tempData.id; /*return the id of the unicast node message*/
     }
 
