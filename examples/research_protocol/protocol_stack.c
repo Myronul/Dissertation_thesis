@@ -4,7 +4,12 @@
 #define BROADCAST_CHANNEL 146 
 #define NR_DATA_BUFFER 8 /*number of messages that can be stored in the buffer for each type of com*/
 
+#define BROADCAST_PUSH 1
+#define UNICAST_PUSH 0 
+
 extern uint8_t SystemState;
+extern uint8_t NodesID[MAX_NDR_NODES]; 
+extern uint8_t indexNodesID;
 
 NODE node; /*defined as extern in the header*/
 DATA dataRxBroadCast;
@@ -23,9 +28,38 @@ static struct unicast_conn uc;    /*rime structure that handle the radio unicast
 static struct broadcast_conn bc;  /*rime structure that handle the radio broadcast com*/
 
 
-static void push_data_com_stack(DATA dataRx, DATA* buffer, uint8_t* map)
+static void push_data_com_stack(DATA dataRx, DATA* buffer, uint8_t* map, uint8_t flagMap)
 {
-    /*bitMap implementation and message filter*/
+    
+    /*search if broadcast for duplicates*/
+
+    uint8_t index = 0;
+
+    if(flagMap == 1) /*case for broadcast*/
+    {
+        /*check if it is already in the buffer*/
+        while(index < NR_DATA_BUFFER)
+        {
+            if((buffer[index].id == dataRx.id && buffer[index].msgType == dataRx.msgType) && ((*map) & (1<<index)))
+            {
+                printf("[INFO]Duplicate already in buffer filtered at ISR for BR from nod: %i\n", dataRx.id);
+                return;
+            }
+
+            index++;
+        }         
+
+        for(index = 0; index < indexNodesID; index++)
+        {
+            if(NodesID[index] == dataRx.id)
+            {
+                printf("[INFO]Duplicate already registered filtered at ISR for BR from nod: %i\n", dataRx.id);
+                return;
+            }
+        }
+
+    }
+  
 
     /*filter by type*/
     switch(SystemState)
@@ -45,12 +79,18 @@ static void push_data_com_stack(DATA dataRx, DATA* buffer, uint8_t* map)
             return; /*for this state we will accept only a certain types of msges to not fill fast the buffer*/
         }
         break;
+
+        case state_ELECT_LIDER_TEMP:
+            return;
+        break;
         
         default:
         break;  
     }
 
-    uint8_t index = 0;
+    /*add to the qeue bitMap implementation and message filter*/
+
+    index = 0;
 
     while(index < NR_DATA_BUFFER)
     {
@@ -58,11 +98,15 @@ static void push_data_com_stack(DATA dataRx, DATA* buffer, uint8_t* map)
         {
             buffer[index] = dataRx;
             *map = (*map) | (1<<index);
+            printf("[INFO]Message stored in the buffer at index %u\n", index);
             return;
         }
 
         index++;
     }
+
+    printf("[INFO]Qeue BC is full!\n");
+
 }
 
 void protocol_reset_stack_BC()
@@ -136,9 +180,9 @@ static void __unicast_ISR__(struct unicast_conn *c, const linkaddr_t *from)
     /*ISR for the unicast receiving data*/
     flagUniCastRx = 1;
     memcpy(&dataRxUniCast, packetbuf_dataptr(), sizeof(DATA));
-    printf("[RX-UC]Node %u received from Node %u )\n", 
+    printf("[RX-UC]Node %u received from Node %u\n", 
             node.unicID, from->u8[0]);
-    push_data_com_stack(dataRxUniCast, dataQeueUc, &bitMapUc);
+    push_data_com_stack(dataRxUniCast, dataQeueUc, &bitMapUc, UNICAST_PUSH);
 
 }
 
@@ -154,9 +198,9 @@ static void __broadcast_ISR__(struct broadcast_conn *c, const linkaddr_t *from)
 
     flagBroadCastRx = 1;
     memcpy(&dataRxBroadCast, packetbuf_dataptr(), sizeof(DATA));
-    printf("[RX-BC]Node %u received from Node %u )\n", 
+    printf("[RX-BC]Node %u received from Node %u\n", 
             node.unicID, from->u8[0]);
-    push_data_com_stack(dataRxBroadCast, dataQeueBc, &bitMapBc);
+    push_data_com_stack(dataRxBroadCast, dataQeueBc, &bitMapBc, BROADCAST_PUSH);
 }
 
 static const struct unicast_callbacks unicastCallback = {__unicast_ISR__};
@@ -165,6 +209,7 @@ static const struct broadcast_callbacks broadcastCallback = {__broadcast_ISR__};
 
 void init_com_channels(void)
 {
+    node.unicID = linkaddr_node_addr.u8[0];
     printf("[INIT]Initializing communication channels\n");
     unicast_open(&uc, UNICAST_CHANNEL, &unicastCallback);
     broadcast_open(&bc, BROADCAST_CHANNEL, &broadcastCallback);

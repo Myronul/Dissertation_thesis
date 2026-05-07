@@ -1,7 +1,7 @@
 #include"protocol_messages.h"
 
-static uint8_t NodesID[MAX_NDR_NODES] = {0}; /*store current ids network in listening mode*/
-static uint8_t indexNodesID = 0;
+uint8_t NodesID[MAX_NDR_NODES] = {0}; /*store current ids network in listening mode*/
+uint8_t indexNodesID = 0;
 
 void message_discovery_searching()
 {
@@ -35,7 +35,7 @@ uint8_t message_search_for_type_BC(uint8_t type)
             {
                 /*case for duplicate message*/
                 printf("[FILTER]Message filtered for duplicate id %u\n", tempData.id);
-                return 0;
+                return 2; /*just duplicates*/
             }
         }
         
@@ -50,6 +50,45 @@ uint8_t message_search_for_type_BC(uint8_t type)
     return 0; /*false*/
 }
 
+
+uint8_t message_process_all_BC(uint8_t type)
+{
+    DATA tempData;
+    uint8_t flagCopy = 0;
+    uint8_t flagDataNew = 0;
+    uint8_t flag = 0;
+
+
+    flag = message_search_for_type_BC(type);
+
+    if(flag == 1)
+    {
+        flagDataNew = 1; /*at least one new element*/
+    }
+    
+    while(flag)
+    {
+        flag = message_search_for_type_BC(type);
+
+        if(flag == 1)
+        {
+            flagDataNew = 1; /*at least one new element*/
+        }
+    }
+    
+    return flagDataNew; /*return 1 if at least one element is new and 0 for none or just duplicates*/
+}
+
+void log_print_nods_id()
+{
+    uint8_t i = 0;
+    printf("[INFO]<<NOD %i>> discovered nodes: ", node.unicID);
+    for(i=0; i<indexNodesID; i++)
+    {
+        printf("%u ", NodesID[i]);
+    }
+    printf(" Total: %i\n", indexNodesID);
+}
 
 uint8_t message_search_for_type_UC(uint8_t type)
 {

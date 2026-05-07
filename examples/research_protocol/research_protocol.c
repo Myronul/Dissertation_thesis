@@ -11,7 +11,7 @@ uint8_t SystemState = 0; /*global state for the entire system*/
 static clock_time_t generate_random_time(void)
 {
     int jitter = 1 + random_rand()%1000;
-    clock_time_t t = (CLOCK_SECOND * jitter) / 1000;
+    clock_time_t t = ((CLOCK_SECOND * jitter) / 1000)+100; /*add 100 ticks to avoid 0 time*/
     printf("wait...%lu\n", t);
     if(t == 0) t = 1;
     
@@ -83,15 +83,13 @@ PROCESS_THREAD(process_init_node, ev, data)
                 abort the new netowrk thing*/
             }
 
-            while(message_search_for_type_BC(msgType_BC_AUTODISCOVERY_START) == 1)
+            if(message_process_all_BC(msgType_BC_AUTODISCOVERY_START) == 1)
             {
-                /*empty the current stack from all messages of autodiscovery*/
-                printf("Message received in LISTEN state, add counter\n");
+                printf("All recevied Message processed in LISTEN state, add counter\n");
                 counter_t++;
-
             }
 
-            clock_time_t t = 10*generate_random_time();
+            clock_time_t t = 500 + 12*generate_random_time();//+generate_random_time();
             etimer_set(&timer, t);
             PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));               
             
@@ -102,6 +100,7 @@ PROCESS_THREAD(process_init_node, ev, data)
             {
                 counter = 0;
                 counter_t = 0;
+                log_print_nods_id();
                 message_clear_buffer_id(); /*clear the buffer of the ids of the nodes discovered in the previous round*/
                 SystemState = state_ELECT_LIDER_TEMP;
                 Log_print();

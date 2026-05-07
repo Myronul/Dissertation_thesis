@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 #define NrMaxBytes 32 /*Define max packet length*/
-#define MAX_NDR_NODES 10
+#define MAX_NDR_NODES 255
 
 typedef enum 
 {
