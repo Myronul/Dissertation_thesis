@@ -89,7 +89,8 @@ PROCESS_THREAD(process_init_node, ev, data)
                 counter_t++;
             }
 
-            clock_time_t t = 500 + 12*generate_random_time();//+generate_random_time();
+            uint8_t n = message_return_index_nr_nodes();
+            clock_time_t t = 20 + (clock_time_t)20*n + generate_random_time();//+generate_random_time();
             etimer_set(&timer, t);
             PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));               
             
@@ -101,17 +102,18 @@ PROCESS_THREAD(process_init_node, ev, data)
                 counter = 0;
                 counter_t = 0;
                 log_print_nods_id();
-                message_clear_buffer_id(); /*clear the buffer of the ids of the nodes discovered in the previous round*/
                 SystemState = state_ELECT_LIDER_TEMP;
-                Log_print();
-                PROCESS_YIELD();
+                continue;
+                //PROCESS_YIELD();
             }
 
         }
 
         if(SystemState == state_ELECT_LIDER_TEMP)
         {
+            message_clear_buffer_id(); /*clear the buffer of the ids of the nodes discovered in the previous round*/
             Log_print();
+            PROCESS_YIELD();
         }
 
         PROCESS_PAUSE();

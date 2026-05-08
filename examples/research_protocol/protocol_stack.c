@@ -31,6 +31,34 @@ static struct broadcast_conn bc;  /*rime structure that handle the radio broadca
 static void push_data_com_stack(DATA dataRx, DATA* buffer, uint8_t* map, uint8_t flagMap)
 {
     
+    /*filter by type*/
+    switch(SystemState)
+    {
+        case state_AUTODISCOVERY:
+        if((dataRx.msgType != msgType_BC_AUTODISCOVERY_START) && (dataRx.msgType != msgType_UC_JOIN_EXISTING_NETWORK))
+        {
+            printf("[FILTER]Message filtered in state AUTODISCOVERY\n");
+            return; /*for this state we will accept only a certain types of msges to not fill fast the buffer*/
+        }
+        break;
+
+        case state_LISTEN:
+        if((dataRx.msgType != msgType_BC_AUTODISCOVERY_START) && (dataRx.msgType != msgType_UC_JOIN_EXISTING_NETWORK))
+        {
+            printf("[FILTER]Message filtered in state LISTEN\n");
+            return; /*for this state we will accept only a certain types of msges to not fill fast the buffer*/
+        }
+        break;
+
+        case state_ELECT_LIDER_TEMP:
+            printf("[FILTER]Message filtered in state ELECT_LIDER\n");
+            return;
+        break;
+        
+        default:
+        break;  
+    }
+
     /*search if broadcast for duplicates*/
 
     uint8_t index = 0;
@@ -58,34 +86,6 @@ static void push_data_com_stack(DATA dataRx, DATA* buffer, uint8_t* map, uint8_t
             }
         }
 
-    }
-  
-
-    /*filter by type*/
-    switch(SystemState)
-    {
-        case state_AUTODISCOVERY:
-        if((dataRx.msgType != msgType_BC_AUTODISCOVERY_START) && (dataRx.msgType != msgType_UC_JOIN_EXISTING_NETWORK))
-        {
-            printf("[FILTER]Message filtered in state AUTODISCOVERY\n");
-            return; /*for this state we will accept only a certain types of msges to not fill fast the buffer*/
-        }
-        break;
-
-        case state_LISTEN:
-        if((dataRx.msgType != msgType_BC_AUTODISCOVERY_START) && (dataRx.msgType != msgType_UC_JOIN_EXISTING_NETWORK))
-        {
-            printf("[FILTER]Message filtered in state LISTEN\n");
-            return; /*for this state we will accept only a certain types of msges to not fill fast the buffer*/
-        }
-        break;
-
-        case state_ELECT_LIDER_TEMP:
-            return;
-        break;
-        
-        default:
-        break;  
     }
 
     /*add to the qeue bitMap implementation and message filter*/

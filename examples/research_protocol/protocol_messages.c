@@ -17,28 +17,26 @@ void message_discovery_searching()
 
 void message_clear_buffer_id(void)
 {
+    printf("[INFO]Clearing buffer of discovered nodes\n");
+    indexNodesID = 0;
     memset(NodesID, 0, sizeof(NodesID));
 }
 
 
+uint8_t message_return_index_nr_nodes()
+{
+    return indexNodesID;
+}
+
 uint8_t message_search_for_type_BC(uint8_t type)
 {
+    /*Function that will search thourgh all the stack received data and will store the first
+    node id in the NodeID buffer*/
+
     DATA tempData;
 
     if(pop_data_comBc_stack(type, &tempData) && indexNodesID<MAX_NDR_NODES)
     {
-        uint8_t i = 0;
-
-        for(i=0; i<indexNodesID; i++)
-        {
-            if(NodesID[i] == tempData.id)
-            {
-                /*case for duplicate message*/
-                printf("[FILTER]Message filtered for duplicate id %u\n", tempData.id);
-                return 2; /*just duplicates*/
-            }
-        }
-        
         /*case for new message*/
         NodesID[indexNodesID++] = tempData.id;
         printf("[INFO]New node discovered with id %u\n", tempData.id);
@@ -53,30 +51,17 @@ uint8_t message_search_for_type_BC(uint8_t type)
 
 uint8_t message_process_all_BC(uint8_t type)
 {
-    DATA tempData;
-    uint8_t flagCopy = 0;
-    uint8_t flagDataNew = 0;
-    uint8_t flag = 0;
+    /*Funciton that will process all the current data in the radio stack
+    by saving the nodeID's into a buffer*/
 
+    volatile uint8_t flag = 0;
 
-    flag = message_search_for_type_BC(type);
-
-    if(flag == 1)
+    while(message_search_for_type_BC(type))
     {
-        flagDataNew = 1; /*at least one new element*/
+        flag = 1; /*at least one new element*/
     }
     
-    while(flag)
-    {
-        flag = message_search_for_type_BC(type);
-
-        if(flag == 1)
-        {
-            flagDataNew = 1; /*at least one new element*/
-        }
-    }
-    
-    return flagDataNew; /*return 1 if at least one element is new and 0 for none or just duplicates*/
+    return flag; /*return 1 if at least one element is new and 0 for none or just duplicates*/
 }
 
 void log_print_nods_id()

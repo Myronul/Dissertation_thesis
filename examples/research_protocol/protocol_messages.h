@@ -31,5 +31,6 @@ uint8_t message_search_for_type_UC(uint8_t type);
 uint8_t message_process_all_BC(uint8_t type);
 void log_print_nods_id(void);
 void message_clear_buffer_id(void);
+uint8_t message_return_index_nr_nodes();
 
 #endif
