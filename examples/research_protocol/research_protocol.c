@@ -90,7 +90,7 @@ PROCESS_THREAD(process_init_node, ev, data)
             }
 
             uint8_t n = message_return_index_nr_nodes();
-            clock_time_t t = 20 + (clock_time_t)20*n + generate_random_time();//+generate_random_time();
+            clock_time_t t = 20 + (clock_time_t)20*n + generate_random_time();
             etimer_set(&timer, t);
             PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));               
             
