@@ -16,6 +16,7 @@ all: $(CONTIKI_PROJECT)
 
 PROJECT_SOURCEFILES += protocol_stack.c
 PROJECT_SOURCEFILES += protocol_messages.c
+PROJECT_SOURCEFILES += routing.c
 
 
 CONTIKI_WITH_RIME = 1

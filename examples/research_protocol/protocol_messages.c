@@ -1,13 +1,15 @@
 #include"protocol_messages.h"
+#include"routing.h"
 
-uint8_t NodesID[MAX_NDR_NODES] = {0}; /*store current ids network in listening mode*/
-uint8_t indexNodesID = 0;
+nodeType hostNodeType = 0; 
+ROUTING_TABLE routingTable = {0}; /*store current ids network in listening mode*/
 
 void message_discovery_searching()
 {
     char payload[] = "MAC_ADDRESS_DISCOVERY";
-    linkaddr_copy((unsigned char*)&dataTxBroadCast.id, &linkaddr_node_addr); /*test*/
-    dataTxBroadCast.roleCode = 0x00; 
+    linkaddr_copy((unsigned char*)&dataTxBroadCast.nodeInfo.id, &linkaddr_node_addr); /*test*/
+    dataTxBroadCast.type = hostNodeType; /*set the type of the node*/
+    dataTxBroadCast.nodeInfo.metric = random_rand()%10; /*test*/
     dataTxBroadCast.msgType = msgType_BC_AUTODISCOVERY_START; /*discovery message*/
     dataTxBroadCast.msgLen = 3;
     memcpy(dataTxBroadCast.payload, payload, sizeof(payload));
@@ -18,14 +20,30 @@ void message_discovery_searching()
 void message_clear_buffer_id(void)
 {
     printf("[INFO]Clearing buffer of discovered nodes\n");
-    indexNodesID = 0;
-    memset(NodesID, 0, sizeof(NodesID));
+    memset(&routingTable, 0, sizeof(ROUTING_TABLE));
 }
 
 
-uint8_t message_return_index_nr_nodes()
+uint8_t message_return_index_nr_nodes(nodeType type)
 {
-    return indexNodesID;
+    switch(type)
+    {
+        case PROCESSER:
+            return routingTable.indexProcessers;
+        break;
+        
+        case PRODUCER:
+            return routingTable.indexProducers;
+        break;
+
+        case CONSUMER:
+            return routingTable.indexConsumers;
+        break;
+
+        default:
+            return 0;
+        break;
+    }
 }
 
 uint8_t message_search_for_type_BC(uint8_t type)
@@ -35,13 +53,40 @@ uint8_t message_search_for_type_BC(uint8_t type)
 
     DATA tempData;
 
-    if(pop_data_comBc_stack(type, &tempData) && indexNodesID<MAX_NDR_NODES)
+    if(pop_data_comBc_stack(type, &tempData))
     {
         /*case for new message*/
-        NodesID[indexNodesID++] = tempData.id;
-        printf("[INFO]New node discovered with id %u\n", tempData.id);
+        switch (tempData.type)
+        {
+            case PROCESSER:
+                if(routingTable.indexProcessers < MAX_NDR_NODES)
+                {
+                    routingTable.routingTableProcessers[routingTable.indexProcessers++] = tempData.nodeInfo;
+                    printf("[INFO]New Processer discovered with id %u\n", tempData.nodeInfo.id);
+                }
+                break;
+
+            case PRODUCER:
+                if(routingTable.indexProducers < MAX_NDR_NODES)
+                {
+                    routingTable.routingTableProducers[routingTable.indexProducers++] = tempData.nodeInfo;
+                    printf("[INFO]New Producer discovered with id %u\n", tempData.nodeInfo.id);
+                }
+                break;
+
+            case CONSUMER:
+                if(routingTable.indexConsumers < MAX_NDR_NODES)
+                {
+                    routingTable.routingTableConsumers[routingTable.indexConsumers++] = tempData.nodeInfo;
+                    printf("[INFO]New Consumer discovered with id %u\n", tempData.nodeInfo.id);
+                }
+                break;
+
+            default:
+                break;
+        }
+
         return 1; /*true*/
-        
     }
 
     printf("[INFO]No message of type %u found in BC stack\n", type);
@@ -64,24 +109,44 @@ uint8_t message_process_all_BC(uint8_t type)
     return flag; /*return 1 if at least one element is new and 0 for none or just duplicates*/
 }
 
+
 void log_print_nods_id()
 {
     uint8_t i = 0;
-    printf("[INFO]<<NOD %i>> discovered nodes: ", node.unicID);
-    for(i=0; i<indexNodesID; i++)
+    printf("[INFO]<<NOD %i>> discovered nodes: ", node.id);
+    printf("\n");
+
+    printf("[INFO]Processers: ");
+    for(i=0; i<routingTable.indexProcessers; i++)
     {
-        printf("%u ", NodesID[i]);
+        printf("%u ", routingTable.routingTableProcessers[i].id);
     }
-    printf(" Total: %i\n", indexNodesID);
+    printf(" Total: %i\n", routingTable.indexProcessers);
+
+    printf("[INFO]Producers: ");
+    for(i=0; i<routingTable.indexProducers; i++)
+    {
+        printf("%u ", routingTable.routingTableProducers[i].id);
+    }
+    printf(" Total: %i\n", routingTable.indexProducers);
+
+    printf("[INFO]Consumers: ");
+    for(i=0; i<routingTable.indexConsumers; i++)
+    {
+        printf("%u ", routingTable.routingTableConsumers[i].id);
+    }
+    printf(" Total: %i\n", routingTable.indexConsumers);
 }
+
 
 uint8_t message_search_for_type_UC(uint8_t type)
 {
     DATA tempData;
-    if(pop_data_comUc_stack(type, &tempData) && indexNodesID<MAX_NDR_NODES)
+
+    if(pop_data_comUc_stack(type, &tempData))
     {
-        printf("[INFO]Unicast message received from node with id %u\n", tempData.id);
-        return tempData.id; /*return the id of the unicast node message*/
+        printf("[INFO]Unicast message received from node with id %u\n", tempData.nodeInfo.id);
+        return tempData.nodeInfo.id; /*return the id of the unicast node message*/
     }
 
     return 255;

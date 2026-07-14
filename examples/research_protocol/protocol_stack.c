@@ -1,5 +1,7 @@
 #include "protocol_stack.h"
 #include"protocol_messages.h"
+#include"routing.h"
+
 #define UNICAST_CHANNEL 129 /*unic radio channel active*/
 #define BROADCAST_CHANNEL 146 
 #define NR_DATA_BUFFER 8 /*number of messages that can be stored in the buffer for each type of com*/
@@ -8,8 +10,7 @@
 #define UNICAST_PUSH 0 
 
 extern uint8_t SystemState;
-extern uint8_t NodesID[MAX_NDR_NODES]; 
-extern uint8_t indexNodesID;
+extern ROUTING_TABLE routingTable;
 
 NODE node; /*defined as extern in the header*/
 DATA dataRxBroadCast;
@@ -26,6 +27,56 @@ static uint8_t flagBroadCastRx = 0;
 
 static struct unicast_conn uc;    /*rime structure that handle the radio unicast com*/
 static struct broadcast_conn bc;  /*rime structure that handle the radio broadcast com*/
+
+
+static uint8_t filter_routing_table(DATA dataRx)
+{
+    /*Funciton that will return true if the node is already in the routing table*/
+    uint8_t i = 0;
+
+    switch (dataRx.type)
+    {
+        case PROCESSER:
+            for(i=0; i < routingTable.indexProcessers; i++)
+            {
+                if(routingTable.routingTableProcessers[i].id == dataRx.nodeInfo.id)
+                {
+                    printf("[FILTER]Duplicate Processer already in routing table filtered at ISR for BR from nod: %i\n", dataRx.nodeInfo.id);
+                    return 1;
+                }
+            }    
+        break;
+
+        case PRODUCER:
+            for(i=0; i < routingTable.indexProducers; i++)
+            {
+                if(routingTable.routingTableProducers[i].id == dataRx.nodeInfo.id)
+                {
+                    printf("[FILTER]Duplicate Producer already in routing table filtered at ISR for BR from nod: %i\n", dataRx.nodeInfo.id);
+                    return 1;
+                }
+            }
+        break;
+
+        case CONSUMER:
+            for(i=0; i < routingTable.indexConsumers; i++)
+            {
+                if(routingTable.routingTableConsumers[i].id == dataRx.nodeInfo.id)
+                {
+                    printf("[FILTER]Duplicate Consumer already in routing table filtered at ISR for BR from nod: %i\n", dataRx.nodeInfo.id);
+                    return 1;
+                }
+            }
+        break;
+        
+        default:
+            return 1;
+            break;
+        }
+    
+    return 0;
+
+}
 
 
 static void push_data_com_stack(DATA dataRx, DATA* buffer, uint8_t* map, uint8_t flagMap)
@@ -63,27 +114,24 @@ static void push_data_com_stack(DATA dataRx, DATA* buffer, uint8_t* map, uint8_t
 
     uint8_t index = 0;
 
-    if(flagMap == 1) /*case for broadcast*/
+    if(flagMap == 1) /*case for broadcast storming*/
     {
-        /*check if it is already in the buffer*/
+        /*check if it is already in the stack buffer waiting*/
         while(index < NR_DATA_BUFFER)
         {
-            if((buffer[index].id == dataRx.id && buffer[index].msgType == dataRx.msgType) && ((*map) & (1<<index)))
+            if((buffer[index].nodeInfo.id == dataRx.nodeInfo.id && buffer[index].msgType == dataRx.msgType) && ((*map) & (1<<index)))
             {
-                printf("[INFO]Duplicate already in buffer filtered at ISR for BR from nod: %i\n", dataRx.id);
+                printf("[INFO]Duplicate already in buffer filtered at ISR for BR from nod: %i\n", dataRx.nodeInfo.id);
                 return;
             }
 
             index++;
-        }         
-
-        for(index = 0; index < indexNodesID; index++)
+        }
+        
+        
+        if(filter_routing_table(dataRx)) /*check if it is already in the routing table*/
         {
-            if(NodesID[index] == dataRx.id)
-            {
-                printf("[INFO]Duplicate already registered filtered at ISR for BR from nod: %i\n", dataRx.id);
-                return;
-            }
+            return;
         }
 
     }
@@ -181,7 +229,7 @@ static void __unicast_ISR__(struct unicast_conn *c, const linkaddr_t *from)
     flagUniCastRx = 1;
     memcpy(&dataRxUniCast, packetbuf_dataptr(), sizeof(DATA));
     printf("[RX-UC]Node %u received from Node %u\n", 
-            node.unicID, from->u8[0]);
+            node.id, from->u8[0]);
     push_data_com_stack(dataRxUniCast, dataQeueUc, &bitMapUc, UNICAST_PUSH);
 
 }
@@ -199,7 +247,7 @@ static void __broadcast_ISR__(struct broadcast_conn *c, const linkaddr_t *from)
     flagBroadCastRx = 1;
     memcpy(&dataRxBroadCast, packetbuf_dataptr(), sizeof(DATA));
     printf("[RX-BC]Node %u received from Node %u\n", 
-            node.unicID, from->u8[0]);
+            node.id, from->u8[0]);
     push_data_com_stack(dataRxBroadCast, dataQeueBc, &bitMapBc, BROADCAST_PUSH);
 }
 
@@ -209,7 +257,7 @@ static const struct broadcast_callbacks broadcastCallback = {__broadcast_ISR__};
 
 void init_com_channels(void)
 {
-    node.unicID = linkaddr_node_addr.u8[0];
+    node.id = linkaddr_node_addr.u8[0];
     printf("[INIT]Initializing communication channels\n");
     unicast_open(&uc, UNICAST_CHANNEL, &unicastCallback);
     broadcast_open(&bc, BROADCAST_CHANNEL, &broadcastCallback);
@@ -231,31 +279,6 @@ void send_message_broadcast(DATA *data)
     printf("[TX] Sent packet Broadcast\n");
 }
 
-
-void protocol_print_status_node(void) 
-{
-    char *roleStr;
-
-    switch(node.type) 
-    {
-        case PROCESSER: 
-        roleStr = "PROCESSER"; 
-        break;
-
-        case PRODUCER: 
-        roleStr = "PRODUCER";
-        break;
-
-        case CONSUMER: 
-        roleStr = "CONSUMER"; 
-        break;
-
-        default: roleStr = "UNKNOWN";
-    }
-
-    printf("[STATUS]Info -> Node %u, Role: %s, Metric: %u\n", node.unicID, roleStr, node.metric);
-
-}
 
 
 

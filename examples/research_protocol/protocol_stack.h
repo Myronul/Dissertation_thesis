@@ -6,8 +6,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define NrMaxBytes 32 /*Define max packet length*/
-#define MAX_NDR_NODES 255
+#define NrMaxBytes 16 /*Define max packet length*/
+#define MAX_NDR_NODES 100
 
 typedef enum 
 {
@@ -30,16 +30,17 @@ typedef enum
 
 typedef struct NODE 
 {
-    nodeType type;
-    uint8_t unicID;
+    uint8_t id; /*unique id for each node*/
     uint8_t metric;
 
 }NODE;
 
 typedef struct DATA 
 {
-    uint8_t id;      
-    uint8_t roleCode;   
+    //uint8_t id;      
+    //uint8_t roleCode;
+    nodeType type;
+    NODE nodeInfo;   
     uint8_t msgType; 
     uint8_t msgLen;
     uint8_t payload[NrMaxBytes];   
