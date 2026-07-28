@@ -101,7 +101,7 @@ static void push_data_com_stack(DATA dataRx, DATA* buffer, uint8_t* map, uint8_t
         }
         break;
 
-        case state_ELECT_LIDER_TEMP:
+        case state_IDLE:
             printf("[FILTER]Message filtered in state ELECT_LIDER\n");
             return;
         break;
