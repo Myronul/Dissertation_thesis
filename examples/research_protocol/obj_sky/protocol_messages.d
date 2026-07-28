@@ -33,7 +33,8 @@ obj_sky/protocol_messages.o: protocol_messages.c protocol_messages.h \
  ../../core/./net/rime/rmh.h ../../core/./net/rime/route.h \
  ../../core/./net/rime/rucb.h ../../core/./net/rime/timesynch.h \
  ../../core/./net/mac/mac.h ../../core/./dev/radio.h \
- ../../core/./net/rime/trickle.h
+ ../../core/./net/rime/trickle.h sys.h ../../core/./lib/random.h \
+ routing.h
 protocol_messages.c protocol_messages.h :
  ../../core/./contiki.h ../../core/./contiki-version.h :
  ../../platform/sky/./contiki-conf.h ../../platform/sky/./platform-conf.h :
@@ -69,4 +70,5 @@ protocol_messages.c protocol_messages.h :
  ../../core/./net/rime/rmh.h ../../core/./net/rime/route.h :
  ../../core/./net/rime/rucb.h ../../core/./net/rime/timesynch.h :
  ../../core/./net/mac/mac.h ../../core/./dev/radio.h :
- ../../core/./net/rime/trickle.h :
+ ../../core/./net/rime/trickle.h sys.h ../../core/./lib/random.h :
+ routing.h :

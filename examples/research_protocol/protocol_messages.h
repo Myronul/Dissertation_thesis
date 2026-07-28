@@ -10,10 +10,7 @@
 /*MACROS for System State*/
 #define state_AUTODISCOVERY        0x00 /*broadcast messaje for autodiscovery*/
 #define state_LISTEN               0x01 /*broadcast messaje for autodiscovery*/
-#define state_ELECT_LIDER_TEMP     0x02 /*broadcast messaje for autodiscovery*/
-#define state_ID_NEGOTIATION       0x03
-#define state_SEND_ID_NETOWRK      0x04
-#define state_RECEIVE_ID_NETOWRK   0x03
+#define state_IDLE                 0x02 
 
 
 
@@ -30,6 +27,7 @@ uint8_t message_search_for_type_BC(uint8_t type);
 uint8_t message_search_for_type_UC(uint8_t type);
 uint8_t message_process_all_BC(uint8_t type);
 void log_print_nods_id(void);
+void log_print_routing_table(void);
 void message_clear_buffer_id(void);
 uint8_t message_return_index_nr_nodes();
 

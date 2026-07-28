@@ -1,7 +1,8 @@
 #include"protocol_messages.h"
+#include"sys.h"
 #include"routing.h"
 
-nodeType hostNodeType = 0; 
+extern nodeType hostNodeType;
 ROUTING_TABLE routingTable = {0}; /*store current ids network in listening mode*/
 
 void message_discovery_searching()
@@ -9,7 +10,7 @@ void message_discovery_searching()
     char payload[] = "MAC_ADDRESS_DISCOVERY";
     linkaddr_copy((unsigned char*)&dataTxBroadCast.nodeInfo.id, &linkaddr_node_addr); /*test*/
     dataTxBroadCast.type = hostNodeType; /*set the type of the node*/
-    dataTxBroadCast.nodeInfo.metric = random_rand()%10; /*test*/
+    dataTxBroadCast.nodeInfo.metric = random_rand()%100; /*test*/
     dataTxBroadCast.msgType = msgType_BC_AUTODISCOVERY_START; /*discovery message*/
     dataTxBroadCast.msgLen = 3;
     memcpy(dataTxBroadCast.payload, payload, sizeof(payload));
@@ -134,6 +135,34 @@ void log_print_nods_id()
     for(i=0; i<routingTable.indexConsumers; i++)
     {
         printf("%u ", routingTable.routingTableConsumers[i].id);
+    }
+    printf(" Total: %i\n", routingTable.indexConsumers);
+}
+
+void log_print_routing_table(void)
+{
+    uint8_t i = 0;
+    printf("[INFO]<<NOD %i>> routing table: ", node.id);
+    printf("\n");
+
+    printf("[INFO]Processers: ");
+    for(i=0; i<routingTable.indexProcessers; i++)
+    {
+        printf("%u ", routingTable.routingTableProcessers[i].metric);
+    }
+    printf(" Total: %i\n", routingTable.indexProcessers);
+
+    printf("[INFO]Producers: ");
+    for(i=0; i<routingTable.indexProducers; i++)
+    {
+        printf("%u ", routingTable.routingTableProducers[i].metric);
+    }
+    printf(" Total: %i\n", routingTable.indexProducers);
+
+    printf("[INFO]Consumers: ");
+    for(i=0; i<routingTable.indexConsumers; i++)
+    {
+        printf("%u ", routingTable.routingTableConsumers[i].metric);
     }
     printf(" Total: %i\n", routingTable.indexConsumers);
 }

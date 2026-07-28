@@ -35,10 +35,10 @@ PROCESS_THREAD(process_init_node, ev, data)
     static uint8_t flagTime = 0;
     static uint8_t counter = 0;
     static uint8_t counter_t = 0;
-
-
+ 
     PROCESS_BEGIN();
 
+    sys_init_random_node_type();
     init_com_channels();
     random_init(linkaddr_node_addr.u8[0] ^ (clock_time() & 0xFF));
 
@@ -101,15 +101,17 @@ PROCESS_THREAD(process_init_node, ev, data)
             {
                 counter = 0;
                 counter_t = 0;
-                log_print_nods_id();
-                SystemState = state_ELECT_LIDER_TEMP;
+                heapify_routing_table_all();
+                //log_print_nods_id();
+                log_print_routing_table();
+                SystemState = state_IDLE;
                 continue;
                 //PROCESS_YIELD();
             }
 
         }
 
-        if(SystemState == state_ELECT_LIDER_TEMP)
+        if(SystemState == state_IDLE)
         {
             message_clear_buffer_id(); /*clear the buffer of the ids of the nodes discovered in the previous round*/
             Log_print();

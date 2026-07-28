@@ -14,4 +14,7 @@ typedef struct ROUTING_TABLE
     
 }ROUTING_TABLE;
 
+
+void heapify_routing_table_all(void);
+
 #endif ROUTING_H

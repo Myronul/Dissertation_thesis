@@ -1,25 +1,25 @@
-obj_native/ipolite.o: ../../core/net/rime/ipolite.c ../../core/./sys/cc.h \
- ../../platform/native/./contiki-conf.h \
- ../../platform/native/./ctk/ctk-curses.h ../../core/./net/rime/rime.h \
+obj_sky/sys.o: sys.c sys.h protocol_stack.h ../../core/./contiki.h \
+ ../../core/./contiki-version.h ../../platform/sky/./contiki-conf.h \
+ ../../platform/sky/./platform-conf.h ../../cpu/msp430/./msp430def.h \
+ ../../core/./contiki-default-conf.h ../../core/./sys/process.h \
+ ../../core/./sys/pt.h ../../core/./sys/lc.h ../../core/./sys/lc-switch.h \
+ ../../core/./sys/cc.h ../../core/./sys/autostart.h \
+ ../../core/./sys/process.h ../../core/./sys/timer.h \
+ ../../core/./sys/clock.h ../../core/./sys/ctimer.h \
+ ../../core/./sys/etimer.h ../../core/./sys/timer.h \
+ ../../core/./sys/etimer.h ../../core/./sys/rtimer.h \
+ ../../cpu/msp430/./rtimer-arch.h ../../core/./sys/rtimer.h \
+ ../../core/./sys/pt.h ../../core/./sys/procinit.h \
+ ../../core/./sys/loader.h ../../core/./sys/clock.h \
+ ../../core/./sys/energest.h ../../core/./net/rime/rime.h \
  ../../core/./net/rime/announcement.h ../../core/./net/linkaddr.h \
  ../../core/./net/rime/collect.h ../../core/./net/rime/runicast.h \
  ../../core/./net/rime/stunicast.h ../../core/./sys/ctimer.h \
- ../../core/./sys/etimer.h ../../core/./sys/timer.h \
- ../../core/./sys/clock.h ../../core/./sys/process.h \
- ../../core/./sys/pt.h ../../core/./sys/lc.h ../../core/./sys/lc-switch.h \
  ../../core/./net/rime/unicast.h ../../core/./net/rime/broadcast.h \
  ../../core/./net/rime/abc.h ../../core/./net/packetbuf.h \
  ../../core/./net/llsec/llsec802154.h ../../core/./net/mac/frame802154.h \
  ../../core/./net/ip/uip.h ../../core/./net/ip/uipopt.h \
- ../../core/./net/ip/tcpip.h ../../core/./contiki.h \
- ../../core/./contiki-version.h ../../core/./contiki-default-conf.h \
- ../../core/./sys/process.h ../../core/./sys/autostart.h \
- ../../core/./sys/timer.h ../../core/./sys/ctimer.h \
- ../../core/./sys/etimer.h ../../core/./sys/rtimer.h \
- ../../cpu/native/./rtimer-arch.h ../../core/./sys/pt.h \
- ../../core/./sys/procinit.h ../../core/./sys/loader.h \
- ../../core/./sys/clock.h ../../core/./sys/energest.h \
- ../../core/./sys/rtimer.h ../../core/./net/rime/channel.h \
+ ../../core/./net/ip/tcpip.h ../../core/./net/rime/channel.h \
  ../../core/./net/rime/chameleon.h ../../core/./net/queuebuf.h \
  ../../core/./net/rime/neighbor-discovery.h \
  ../../core/./net/rime/collect-neighbor.h \
@@ -34,28 +34,28 @@ obj_native/ipolite.o: ../../core/net/rime/ipolite.c ../../core/./sys/cc.h \
  ../../core/./net/rime/rucb.h ../../core/./net/rime/timesynch.h \
  ../../core/./net/mac/mac.h ../../core/./dev/radio.h \
  ../../core/./net/rime/trickle.h ../../core/./lib/random.h
-../../core/net/rime/ipolite.c ../../core/./sys/cc.h :
- ../../platform/native/./contiki-conf.h :
- ../../platform/native/./ctk/ctk-curses.h ../../core/./net/rime/rime.h :
+sys.c sys.h protocol_stack.h ../../core/./contiki.h :
+ ../../core/./contiki-version.h ../../platform/sky/./contiki-conf.h :
+ ../../platform/sky/./platform-conf.h ../../cpu/msp430/./msp430def.h :
+ ../../core/./contiki-default-conf.h ../../core/./sys/process.h :
+ ../../core/./sys/pt.h ../../core/./sys/lc.h ../../core/./sys/lc-switch.h :
+ ../../core/./sys/cc.h ../../core/./sys/autostart.h :
+ ../../core/./sys/process.h ../../core/./sys/timer.h :
+ ../../core/./sys/clock.h ../../core/./sys/ctimer.h :
+ ../../core/./sys/etimer.h ../../core/./sys/timer.h :
+ ../../core/./sys/etimer.h ../../core/./sys/rtimer.h :
+ ../../cpu/msp430/./rtimer-arch.h ../../core/./sys/rtimer.h :
+ ../../core/./sys/pt.h ../../core/./sys/procinit.h :
+ ../../core/./sys/loader.h ../../core/./sys/clock.h :
+ ../../core/./sys/energest.h ../../core/./net/rime/rime.h :
  ../../core/./net/rime/announcement.h ../../core/./net/linkaddr.h :
  ../../core/./net/rime/collect.h ../../core/./net/rime/runicast.h :
  ../../core/./net/rime/stunicast.h ../../core/./sys/ctimer.h :
- ../../core/./sys/etimer.h ../../core/./sys/timer.h :
- ../../core/./sys/clock.h ../../core/./sys/process.h :
- ../../core/./sys/pt.h ../../core/./sys/lc.h ../../core/./sys/lc-switch.h :
  ../../core/./net/rime/unicast.h ../../core/./net/rime/broadcast.h :
  ../../core/./net/rime/abc.h ../../core/./net/packetbuf.h :
  ../../core/./net/llsec/llsec802154.h ../../core/./net/mac/frame802154.h :
  ../../core/./net/ip/uip.h ../../core/./net/ip/uipopt.h :
- ../../core/./net/ip/tcpip.h ../../core/./contiki.h :
- ../../core/./contiki-version.h ../../core/./contiki-default-conf.h :
- ../../core/./sys/process.h ../../core/./sys/autostart.h :
- ../../core/./sys/timer.h ../../core/./sys/ctimer.h :
- ../../core/./sys/etimer.h ../../core/./sys/rtimer.h :
- ../../cpu/native/./rtimer-arch.h ../../core/./sys/pt.h :
- ../../core/./sys/procinit.h ../../core/./sys/loader.h :
- ../../core/./sys/clock.h ../../core/./sys/energest.h :
- ../../core/./sys/rtimer.h ../../core/./net/rime/channel.h :
+ ../../core/./net/ip/tcpip.h ../../core/./net/rime/channel.h :
  ../../core/./net/rime/chameleon.h ../../core/./net/queuebuf.h :
  ../../core/./net/rime/neighbor-discovery.h :
  ../../core/./net/rime/collect-neighbor.h :
