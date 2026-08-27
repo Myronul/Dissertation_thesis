@@ -7,12 +7,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-/*MACROS for System State*/
-#define state_AUTODISCOVERY        0x00 /*broadcast messaje for autodiscovery*/
-#define state_LISTEN               0x01 /*broadcast messaje for autodiscovery*/
-#define state_IDLE                 0x02 
-
-
 
 /*MACROS for MSG_TYPE broadcast*/
 #define msgType_BC_AUTODISCOVERY_START     0x01 /*broadcast messaje for autodiscovery*/

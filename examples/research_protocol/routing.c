@@ -32,28 +32,44 @@ static void heapify_min_array_nodes(NODE *nodesArray, uint8_t index, uint8_t siz
 void heapify_routing_table_all(void)
 {
     int16_t i;
+    heapify_routing_table_processers();
+    heapify_routing_table_producers();
+    heapify_routing_table_consumers();
+}
 
-    for (i = ((int16_t)routingTable.indexProcessers/2)-1; i >= 0; i--)
+inline void heapify_routing_table_processers(void)
+{
+    int16_t i;
+    for(i = ((int16_t)routingTable.indexProcessers/2)-1; i >= 0; i--)
     {
         heapify_min_array_nodes(
             routingTable.routingTableProcessers,
             i,
             routingTable.indexProcessers);
-    }
+    }   
+}
 
-    for (i = ((int16_t)routingTable.indexProducers/2)-1; i >= 0; i--)
+inline void heapify_routing_table_producers(void)
+{
+    int16_t i;
+    for(i = ((int16_t)routingTable.indexProducers/2)-1; i >= 0; i--)
     {
         heapify_min_array_nodes(
             routingTable.routingTableProducers,
             i,
             routingTable.indexProducers);
-    }
+    }   
+}
 
-    for (i = ((int16_t)routingTable.indexConsumers/2)-1; i >= 0; i--)
+inline void heapify_routing_table_consumers(void)
+{
+    int16_t i;
+    for(i = ((int16_t)routingTable.indexConsumers/2)-1; i >= 0; i--)
     {
         heapify_min_array_nodes(
             routingTable.routingTableConsumers,
             i,
             routingTable.indexConsumers);
     }
+
 }
