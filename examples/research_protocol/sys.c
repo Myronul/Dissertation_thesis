@@ -27,7 +27,7 @@ static void sys_timer01_ISR_(void* ptr)
         }
     }
 
-    ctimer_set(&timer01, 100, sys_timer01_ISR_, NULL);
+    ctimer_set(&timer01, 1, sys_timer01_ISR_, NULL);
 }
 
 void sys_timer01_start(void)
