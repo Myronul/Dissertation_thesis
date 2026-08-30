@@ -115,7 +115,7 @@ PROCESS_THREAD(process_init_node, ev, data)
         {
             Log_print_state();
             sys_start_heartbeat();
-            sys_timer01_start();
+            sys_heart_beat_handler_tx_start();
             PROCESS_YIELD();
         }
 

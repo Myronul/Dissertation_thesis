@@ -12,6 +12,6 @@
 struct ctimer timer01; /*100 ms timer isr*/
 
 void sys_init_random_node_type(void);
-void sys_timer01_start(void);
+void sys_heart_beat_handler_tx_start(void);
 
 #endif
