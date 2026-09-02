@@ -5,17 +5,24 @@
 extern nodeType hostNodeType;
 ROUTING_TABLE routingTable = {0}; /*store current ids network in listening mode*/
 
+
+void message_send_broadcast(const char* payload, uint8_t payloadLen, uint8_t msgType)
+{
+    linkaddr_copy((unsigned char*)&dataTxBroadCast.nodeInfo.id, &linkaddr_node_addr); 
+    dataTxBroadCast.type = hostNodeType; /*set the type of the node*/
+    dataTxBroadCast.nodeInfo.metric = node.metric; /*set the metric of the node*/
+    dataTxBroadCast.nodeInfo.timerHeartBeat = node.timerHeartBeat; /*set the heartbeat timer of the node*/
+    dataTxBroadCast.msgType = msgType; /*discovery message*/
+    dataTxBroadCast.msgLen = payloadLen;
+    memcpy(dataTxBroadCast.payload, payload, payloadLen);
+    send_message_broadcast(&dataTxBroadCast);
+}
+
 void message_discovery_searching()
 {
-    char payload[] = "MAC_ADDRESS_DISCOVERY";
-    linkaddr_copy((unsigned char*)&dataTxBroadCast.nodeInfo.id, &linkaddr_node_addr); /*test*/
-    dataTxBroadCast.type = hostNodeType; /*set the type of the node*/
-    dataTxBroadCast.nodeInfo.metric = random_rand()%100; /*test*/
-    dataTxBroadCast.msgType = msgType_BC_AUTODISCOVERY_START; /*discovery message*/
-    dataTxBroadCast.msgLen = 3;
-    memcpy(dataTxBroadCast.payload, payload, sizeof(payload));
-
-    send_message_broadcast(&dataTxBroadCast);
+    message_send_broadcast(payload_msgType_BC_AUTODISCOVERY_START, 
+                           sizeof(payload_msgType_BC_AUTODISCOVERY_START), 
+                           msgType_BC_AUTODISCOVERY_START);
 }
 
 void message_clear_buffer_id(void)

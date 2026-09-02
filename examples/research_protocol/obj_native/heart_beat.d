@@ -34,7 +34,8 @@ obj_native/heart_beat.o: heart_beat.c heart_beat.h sys.h protocol_stack.h \
  ../../core/./net/rime/rmh.h ../../core/./net/rime/route.h \
  ../../core/./net/rime/rucb.h ../../core/./net/rime/timesynch.h \
  ../../core/./net/mac/mac.h ../../core/./dev/radio.h \
- ../../core/./net/rime/trickle.h ../../core/./lib/random.h routing.h
+ ../../core/./net/rime/trickle.h ../../core/./lib/random.h routing.h \
+ protocol_messages.h
 heart_beat.c heart_beat.h sys.h protocol_stack.h :
  ../../core/./contiki.h ../../core/./contiki-version.h :
  ../../platform/native/./contiki-conf.h :
@@ -72,3 +73,4 @@ heart_beat.c heart_beat.h sys.h protocol_stack.h :
  ../../core/./net/rime/rucb.h ../../core/./net/rime/timesynch.h :
  ../../core/./net/mac/mac.h ../../core/./dev/radio.h :
  ../../core/./net/rime/trickle.h ../../core/./lib/random.h routing.h :
+ protocol_messages.h :

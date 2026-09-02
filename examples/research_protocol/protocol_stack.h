@@ -17,21 +17,12 @@ typedef enum
     
 }nodeType;
 
-typedef enum
-{
-    SEARCHING,
-    RECEIVED,
-    WAITINGBR,
-    IDNEGOTIATION,
-    WAITINGFORID
-
-}discoveryState;
-
 
 typedef struct NODE 
 {
     uint8_t id; /*unique id for each node*/
     uint8_t metric;
+    uint16_t timerHeartBeat; /*timer for the heart beat*/
 
 }NODE;
 

@@ -31,7 +31,6 @@ static void heapify_min_array_nodes(NODE *nodesArray, uint8_t index, uint8_t siz
 
 void heapify_routing_table_all(void)
 {
-    int16_t i;
     heapify_routing_table_processers();
     heapify_routing_table_producers();
     heapify_routing_table_consumers();

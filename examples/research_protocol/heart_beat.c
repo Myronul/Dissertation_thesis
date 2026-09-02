@@ -1,12 +1,12 @@
 #include "heart_beat.h"
 #include "routing.h"
+#include "protocol_messages.h"
 
 extern ROUTING_TABLE routingTable;
-uint8_t timerHeartBeatRNG_counter = 0;
-uint16_t timerHeartBeatRNG_max = 0;
 uint8_t flagStartHeartBeatTimer = 0;
 
 static uint32_t last_hb_time = 0;
+
 static void debug_timer_time()
 {
     uint32_t now = clock_time();
@@ -22,18 +22,22 @@ void sys_start_heartbeat(void)
      * state state_START_HEART_BEAT  
     */
 
-    timerHeartBeatRNG_max = 100 + (100 * (random_rand() % 10)); /* ms */
-    timerHeartBeatRNG_counter = 0;
     flagStartHeartBeatTimer = 1;
-    printf("START_HEART_BEAT: next heartbeat window=%u ms\n", timerHeartBeatRNG_max);
+    printf("START_HEART_BEAT: next heartbeat window=%u ms\n", node.timerHeartBeat);
 }
 
 void handle_heart_beat_send(void)
 {
+    /*send heartbeat message Broadcast*/
+
     if(flagStartHeartBeatTimer)
     {
         /* timer arrived, send heartbeat */
-        printf("HEARTBEAT SENT...test...passed %u ms :)\n", timerHeartBeatRNG_max);
+        message_send_broadcast(payload_msgType_HB_HEARTBEAT, 
+                              sizeof(payload_msgType_HB_HEARTBEAT), 
+                              msgType_HB_HEARTBEAT);
+
+        printf("HEARTBEAT SENT...test...passed %u ms :)\n", node.timerHeartBeat);
         debug_timer_time();
     }
 }

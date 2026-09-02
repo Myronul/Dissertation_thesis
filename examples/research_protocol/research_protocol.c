@@ -38,7 +38,7 @@ PROCESS_THREAD(process_init_node, ev, data)
  
     PROCESS_BEGIN();
 
-    sys_init_random_node_type();
+    sys_init_random_node_values();
     init_com_channels();
     random_init(linkaddr_node_addr.u8[0] ^ (clock_time() & 0xFF));
 
